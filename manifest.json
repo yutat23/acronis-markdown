@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "acronis-markdown",
+  "version": "1.0.0",
+  "description": "AcronisクラウドストレージでMarkdownファイルをWeb上でプレビュー/raw表示",
+  "permissions": [],
+  "host_permissions": ["https://jp-cloud.acronis.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://jp-cloud.acronis.com/*"],
+      "js": ["inject.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://jp-cloud.acronis.com/*"],
+      "js": ["marked.min.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ]
+}
