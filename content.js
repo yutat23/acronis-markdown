@@ -72,7 +72,14 @@
   }
 
   function markdownToHtml(md) {
-    if (typeof marked !== 'undefined') return marked.parse(md, { gfm: true });
+    if (typeof marked !== 'undefined') {
+      return marked.parse(md, {
+        gfm: true,
+        breaks: true,
+        headerIds: true,
+        mangle: false
+      });
+    }
     return md
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/^### (.*$)/gim, '<h3>$1</h3>').replace(/^## (.*$)/gim, '<h2>$1</h2>').replace(/^# (.*$)/gim, '<h1>$1</h1>')

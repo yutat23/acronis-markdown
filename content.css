@@ -93,22 +93,116 @@
 }
 
 .acronis-md-rendered {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #24292f;
 }
 
-.acronis-md-rendered h1 { font-size: 1.5em; margin: 1em 0 0.5em; }
-.acronis-md-rendered h2 { font-size: 1.3em; margin: 1em 0 0.5em; }
-.acronis-md-rendered h3 { font-size: 1.1em; margin: 1em 0 0.5em; }
-.acronis-md-rendered pre, .acronis-md-rendered code {
-  background: #f4f4f4;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'Consolas', 'Monaco', monospace;
+.acronis-md-rendered h1 {
+  font-size: 1.75em;
+  font-weight: 600;
+  margin: 1.25em 0 0.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #d0d7de;
 }
-.acronis-md-rendered pre { padding: 12px; overflow-x: auto; }
-.acronis-md-rendered pre code { padding: 0; background: none; }
-.acronis-md-rendered ul { padding-left: 1.5em; }
-.acronis-md-rendered a { color: #0066cc; }
+.acronis-md-rendered h1:first-child { margin-top: 0; }
+.acronis-md-rendered h2 {
+  font-size: 1.4em;
+  font-weight: 600;
+  margin: 1.25em 0 0.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #d0d7de;
+}
+.acronis-md-rendered h3 { font-size: 1.2em; font-weight: 600; margin: 1em 0 0.5em; }
+.acronis-md-rendered h4, .acronis-md-rendered h5, .acronis-md-rendered h6 {
+  font-size: 1em; font-weight: 600; margin: 1em 0 0.5em;
+}
+
+.acronis-md-rendered p { margin: 0.75em 0; }
+.acronis-md-rendered p:first-child { margin-top: 0; }
+
+.acronis-md-rendered blockquote {
+  margin: 0.75em 0;
+  padding: 0 1em;
+  color: #57606a;
+  border-left: 4px solid #d0d7de;
+}
+.acronis-md-rendered blockquote p:last-child { margin-bottom: 0; }
+
+.acronis-md-rendered pre {
+  margin: 1em 0;
+  padding: 16px;
+  overflow-x: auto;
+  background: #f6f8fa;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.45;
+  border: 1px solid #d0d7de;
+}
+.acronis-md-rendered code {
+  padding: 0.2em 0.4em;
+  font-family: 'Consolas', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+  font-size: 0.9em;
+  background: rgba(175, 184, 193, 0.2);
+  border-radius: 4px;
+}
+.acronis-md-rendered pre code {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
+.acronis-md-rendered ul, .acronis-md-rendered ol {
+  margin: 0.75em 0;
+  padding-left: 1.25em;
+  list-style-position: outside;
+}
+.acronis-md-rendered ul {
+  list-style: none !important;
+}
+.acronis-md-rendered ul li::before {
+  content: "• ";
+  margin-right: 0.35em;
+  color: #24292f;
+}
+.acronis-md-rendered ul ul li::before { content: "◦ "; }
+.acronis-md-rendered ul ul ul li::before { content: "▪ "; }
+.acronis-md-rendered ol {
+  list-style-type: decimal !important;
+}
+.acronis-md-rendered li { margin: 0.25em 0; }
+.acronis-md-rendered li > p { margin: 0.25em 0; }
+
+.acronis-md-rendered a {
+  color: #0969da;
+  text-decoration: none;
+}
+.acronis-md-rendered a:hover { text-decoration: underline; }
+
+.acronis-md-rendered hr {
+  margin: 1.5em 0;
+  border: none;
+  border-top: 1px solid #d0d7de;
+}
+
+.acronis-md-rendered table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+.acronis-md-rendered th, .acronis-md-rendered td {
+  padding: 6px 13px;
+  border: 1px solid #d0d7de;
+}
+.acronis-md-rendered th {
+  font-weight: 600;
+  background: #f6f8fa;
+}
+.acronis-md-rendered tr:nth-child(even) { background: #f6f8fa; }
+
+.acronis-md-rendered img { max-width: 100%; height: auto; }
+.acronis-md-rendered strong { font-weight: 600; }
 
 /* 編集モード */
 .acronis-md-edit-area {
