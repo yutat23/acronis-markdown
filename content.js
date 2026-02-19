@@ -188,8 +188,31 @@
     modal.appendChild(contentArea);
     overlay.appendChild(modal);
 
-    header.querySelector('.acronis-md-close').addEventListener('click', () => overlay.remove());
-    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    function closeOverlay() {
+      overlay.remove();
+      document.removeEventListener('keydown', onEscKey);
+    }
+
+    function normalizeLineEndings(s) {
+      return (s || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    }
+
+    function hasUnsavedChanges() {
+      return normalizeLineEndings(textarea.value) !== normalizeLineEndings(content);
+    }
+
+    function requestClose() {
+      if (hasUnsavedChanges() && !confirm('編集中の内容が保存されていません。閉じますか？')) return;
+      closeOverlay();
+    }
+
+    function onEscKey(e) {
+      if (e.key === 'Escape') requestClose();
+    }
+
+    header.querySelector('.acronis-md-close').addEventListener('click', requestClose);
+    overlay.addEventListener('click', e => { if (e.target === overlay) requestClose(); });
+    document.addEventListener('keydown', onEscKey);
 
     header.querySelectorAll('[data-mode]').forEach(btn => {
       btn.addEventListener('click', () => {
