@@ -210,10 +210,14 @@
   flex-direction: column;
   height: 100%;
   min-height: 200px;
+  width: 100%;
+  box-sizing: border-box;
 }
 .acronis-md-textarea {
   flex: 1;
   min-height: 300px;
+  width: 100%;
+  box-sizing: border-box;
   padding: 12px;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   font-size: 13px;
