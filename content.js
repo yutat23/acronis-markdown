@@ -51,8 +51,16 @@
       .then(data => {
         const items = Array.isArray(data) ? data : (data?.items || data?.data || data?.children || []);
         const item = items.find(x => x.name === filename && !x.is_directory);
-        return item?.uuid || null;
+        return item ? { fileId: item.uuid, parentId: folderId } : null;
       })
+      .catch(() => null);
+  }
+
+  function getNodeParentId(nodeId) {
+    const url = `${window.location.origin}/fc/api/v1/sync_and_share_nodes/${nodeId}`;
+    return fetch(url, { credentials: 'include', headers: { 'Accept': 'application/json' } })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => (data?.parent_uuid || data?.parent?.uuid || data?.parent_id || data?.parent?.id || null))
       .catch(() => null);
   }
 
@@ -82,7 +90,35 @@
     return div.innerHTML;
   }
 
-  function showPreview(content, filename, isMarkdown) {
+  function getCsrfToken() {
+    const m = document.cookie.match(/rest_access_token=([^;]+)/);
+    return m ? m[1].trim() : '';
+  }
+
+  function uploadFile(parentFolderId, filename, content) {
+    const blob = new Blob([content], { type: 'application/octet-stream' });
+    const url = `${window.location.origin}/fc/api/v1/sync_and_share_nodes/${parentFolderId}/upload?filename=${encodeURIComponent(filename)}&size=${blob.size}`;
+    const csrf = getCsrfToken();
+    const headers = {
+      'Accept': 'application/json, text/plain, */*',
+      'Content-Type': 'application/octet-stream'
+    };
+    if (csrf) headers['X-CSRF-Token'] = csrf;
+    const doFetch = () => fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers,
+      body: blob
+    });
+    return doFetch().then(res => {
+      if (res.status === 500) {
+        return new Promise((resolve) => setTimeout(() => resolve(doFetch()), 1500));
+      }
+      return res;
+    });
+  }
+
+  function showPreview(content, filename, isMarkdown, uploadParentId) {
     const overlay = document.createElement('div');
     overlay.id = 'acronis-md-preview-overlay';
     overlay.className = 'acronis-md-overlay';
@@ -97,6 +133,7 @@
       <div class="acronis-md-actions">
         <button type="button" class="acronis-md-btn" data-mode="preview">プレビュー</button>
         <button type="button" class="acronis-md-btn" data-mode="raw">Raw</button>
+        ${uploadParentId ? '<button type="button" class="acronis-md-btn" data-mode="edit">編集</button>' : ''}
         <button type="button" class="acronis-md-btn acronis-md-close">閉じる</button>
       </div>
     `;
@@ -109,9 +146,26 @@
     const previewDiv = document.createElement('div');
     previewDiv.className = 'acronis-md-rendered';
     previewDiv.innerHTML = markdownToHtml(content);
+    const editArea = document.createElement('div');
+    editArea.className = 'acronis-md-edit-area';
+    editArea.style.display = 'none';
+    const textarea = document.createElement('textarea');
+    textarea.className = 'acronis-md-textarea';
+    textarea.value = content;
+    textarea.placeholder = 'Markdownを編集...';
+    const saveBar = document.createElement('div');
+    saveBar.className = 'acronis-md-save-bar';
+    saveBar.innerHTML = `
+      <button type="button" class="acronis-md-btn acronis-md-save">保存</button>
+      <button type="button" class="acronis-md-btn acronis-md-cancel">キャンセル</button>
+      <span class="acronis-md-save-status"></span>
+    `;
+    editArea.appendChild(textarea);
+    editArea.appendChild(saveBar);
 
     contentArea.appendChild(rawPre);
     contentArea.appendChild(previewDiv);
+    contentArea.appendChild(editArea);
 
     if (isMarkdown) {
       rawPre.style.display = 'none';
@@ -134,9 +188,44 @@
       btn.addEventListener('click', () => {
         header.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        rawPre.style.display = btn.dataset.mode === 'preview' ? 'none' : 'block';
-        previewDiv.style.display = btn.dataset.mode === 'preview' ? 'block' : 'none';
+        const mode = btn.dataset.mode;
+        rawPre.style.display = mode === 'raw' ? 'block' : 'none';
+        previewDiv.style.display = mode === 'preview' ? 'block' : 'none';
+        editArea.style.display = mode === 'edit' ? 'block' : 'none';
+        if (mode === 'edit') textarea.focus();
       });
+    });
+
+    saveBar.querySelector('.acronis-md-save').addEventListener('click', async () => {
+      const statusEl = saveBar.querySelector('.acronis-md-save-status');
+      statusEl.textContent = '保存中...';
+      statusEl.className = 'acronis-md-save-status';
+      try {
+        const res = await uploadFile(uploadParentId, filename, textarea.value);
+        if (res.ok) {
+          statusEl.textContent = '保存しました';
+          statusEl.classList.add('success');
+          content = textarea.value;
+          rawPre.textContent = content;
+          previewDiv.innerHTML = markdownToHtml(content);
+        } else {
+          let errMsg = '保存に失敗しました';
+          try {
+            const errJson = await res.json();
+            if (errJson?.message || errJson?.error) errMsg += ': ' + (errJson.message || errJson.error);
+          } catch (_) {}
+          statusEl.textContent = errMsg;
+          statusEl.classList.add('error');
+        }
+      } catch (err) {
+        statusEl.textContent = 'エラー: ' + (err.message || '保存できませんでした');
+        statusEl.classList.add('error');
+      }
+    });
+
+    saveBar.querySelector('.acronis-md-cancel').addEventListener('click', () => {
+      textarea.value = content;
+      header.querySelector('[data-mode="preview"]').click();
     });
 
     document.body.appendChild(overlay);
@@ -158,16 +247,35 @@
     e.stopImmediatePropagation();
 
     let downloadUrl = hasDownloadHref ? href : null;
+    let nodeId = null;
+    let uploadParentId = null;
+
+    if (hasDownloadHref) {
+      const m = href.match(/sync_and_share_nodes\/([a-f0-9-]+)\/download/i);
+      if (m) nodeId = m[1];
+    }
 
     if (!downloadUrl && isMdFile) {
-      let nodeId = getFileListFromPage()[filenameFromDom];
+      nodeId = getFileListFromPage()[filenameFromDom];
       if (!nodeId) {
         const folderId = (window.location.hash || '').match(/\/nodes\/([a-f0-9-]+)/i)?.[1];
-        if (folderId) nodeId = await getNodeIdFromContentsApi(folderId, filenameFromDom);
+        if (folderId) {
+          const result = await getNodeIdFromContentsApi(folderId, filenameFromDom);
+          if (result) {
+            nodeId = result.fileId;
+            uploadParentId = result.parentId;
+          }
+        }
+      } else {
+        uploadParentId = (window.location.hash || '').match(/\/nodes\/([a-f0-9-]+)/i)?.[1];
       }
       if (nodeId) {
         downloadUrl = `${window.location.origin}/fc/api/v1/sync_and_share_nodes/${nodeId}/download`;
       }
+    }
+
+    if (nodeId && !uploadParentId) {
+      uploadParentId = (window.location.hash || '').match(/\/nodes\/([a-f0-9-]+)/i)?.[1] || await getNodeParentId(nodeId);
     }
 
     if (!downloadUrl) return;
@@ -201,7 +309,7 @@
         (contentType.includes('text/') && isMdByContent);
       const displayName = filenameFromDom || filenameFromHeader || 'document.md';
 
-      showPreview(text, displayName, isMarkdown);
+      showPreview(text, displayName, isMarkdown, uploadParentId);
     } catch (err) {
       window.location.href = downloadUrl;
     }

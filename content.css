@@ -109,3 +109,40 @@
 .acronis-md-rendered pre code { padding: 0; background: none; }
 .acronis-md-rendered ul { padding-left: 1.5em; }
 .acronis-md-rendered a { color: #0066cc; }
+
+/* 編集モード */
+.acronis-md-edit-area {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 200px;
+}
+.acronis-md-textarea {
+  flex: 1;
+  min-height: 300px;
+  padding: 12px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+}
+.acronis-md-textarea:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+.acronis-md-save-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-shrink: 0;
+}
+.acronis-md-save-status {
+  font-size: 12px;
+  color: #666;
+}
+.acronis-md-save-status.success { color: #28a745; }
+.acronis-md-save-status.error { color: #dc3545; }
