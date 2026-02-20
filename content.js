@@ -189,8 +189,9 @@
     overlay.appendChild(modal);
 
     function closeOverlay() {
-      overlay.remove();
+      overlay.removeEventListener('keydown', onOverlayKeydown, true);
       document.removeEventListener('keydown', onEscKey);
+      overlay.remove();
     }
 
     function normalizeLineEndings(s) {
@@ -210,8 +211,18 @@
       if (e.key === 'Escape') requestClose();
     }
 
+    function onOverlayKeydown(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a' && e.target === textarea) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        textarea.setSelectionRange(0, textarea.value.length);
+      }
+    }
+
     header.querySelector('.acronis-md-close').addEventListener('click', requestClose);
     overlay.addEventListener('click', e => { if (e.target === overlay) requestClose(); });
+    overlay.addEventListener('keydown', onOverlayKeydown, true);
     document.addEventListener('keydown', onEscKey);
 
     header.querySelectorAll('[data-mode]').forEach(btn => {
